@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة التوصيات الذكية 24/7 | الفوريكس والذهب والسلع</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Cairo', sans-serif; background-color: #0b0f19; color: #e2e8f0; }
+        .glass-card { background: rgba(17, 24, 39, 0.85); border: 1px solid rgba(55, 65, 81, 0.5); backdrop-filter: blur(10px); }
+        .pulse-dot { animation: pulse 2s infinite; }
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <header class="border-b border-gray-800 bg-gray-900/90 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-3 h-3 rounded-full bg-emerald-500 pulse-dot"></div>
+                <h1 class="text-xl font-extrabold bg-gradient-to-l from-amber-400 to-emerald-400 bg-clip-text text-transparent">
+                    AI QUANT TRADER 24/7
+                </h1>
+                <span class="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 rounded-full">
+                    يعمل تلقائياً كل 5 دقائق
+                </span>
+            </div>
+            
+            <div class="flex items-center gap-4 text-sm">
+                <div class="text-gray-400">
+                    آخر تحديث للسوق: <span id="last-scan" class="text-amber-400 font-semibold">جاري التحميل...</span>
+                </div>
+                <button onclick="triggerScan()" id="scan-btn" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-1.5 rounded-lg font-semibold transition text-xs">
+                    🔄 فحص فوري الآن
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 py-6 w-full space-y-6 flex-1">
+
+        <!-- Top Section: Interactive TradingView Chart + Selected Pair Details -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Chart Column -->
+            <div class="lg:col-span-2 glass-card rounded-2xl p-4 flex flex-col">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-amber-400 font-bold text-lg" id="chart-title">الذهب (XAU/USD)</span>
+                        <span class="text-xs bg-gray-800 px-2 py-1 rounded text-gray-300">فريم 5 دقائق مباشر</span>
+                    </div>
+                    <select id="asset-selector" onchange="changeAssetFromSelect()" class="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg px-3 py-1.5 focus:outline-none">
+                        <option value="OANDA:XAUUSD">الذهب (XAU/USD)</option>
+                    </select>
+                </div>
+                <div id="tv_chart_container" class="w-full h-[420px] rounded-xl overflow-hidden border border-gray-800"></div>
+            </div>
+
+            <!-- Live AI Analysis Card for Selected Asset -->
+            <div class="glass-card rounded-2xl p-5 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between border-b border-gray-800 pb-3 mb-4">
+                        <h2 class="font-bold text-lg text-white">🧠 تحليل الذكاء الاصطناعي</h2>
+                        <span id="detail-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-gray-800 text-gray-300">انتظار</span>
+                    </div>
+
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">السعر اللحظي:</span>
+                            <span id="detail-price" class="font-bold text-white text-base">--</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">مؤشر القوة (RSI):</span>
+                            <span id="detail-rsi" class="font-semibold text-blue-400">--</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2 pt-2">
+                            <div class="bg-red-500/10 border border-red-500/30 rounded-lg p-2 text-center">
+                                <div class="text-[11px] text-red-400">وقف الخسارة SL</div>
+                                <div id="detail-sl" class="font-bold text-red-300 text-xs mt-1">--</div>
+                            </div>
+                            <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-2 text-center">
+                                <div class="text-[11px] text-emerald-400">الهدف الأول TP1</div>
+                                <div id="detail-tp1" class="font-bold text-emerald-300 text-xs mt-1">--</div>
+                            </div>
+                            <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-2 text-center">
+                                <div class="text-[11px] text-emerald-400">الهدف الثاني TP2</div>
+                                <div id="detail-tp2" class="font-bold text-emerald-300 text-xs mt-1">--</div>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-800/60 rounded-xl p-3 mt-3 border border-gray-700/50">
+                            <div class="text-xs text-amber-400 font-bold mb-1">رؤية الذكاء الاصطناعي:</div>
+                            <p id="detail-ai-summary" class="text-xs text-gray-300 leading-relaxed">جاري جلب التحليل...</p>
+                        </div>
+
+                        <div>
+                            <div class="text-xs text-gray-400 font-bold mb-1">الاستراتيجيات المتحققة:</div>
+                            <ul id="detail-reasons" class="text-xs text-gray-300 list-disc list-inside space-y-1"></ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-gray-800 text-[11px] text-gray-500 text-center">
+                    النظام يراقب 16 زوجاً من الفوريكس والذهب والفضة والنفط تلقائياً في السيرفر.
+                </div>
+            </div>
+        </div>
+
+        <!-- Market Scanner Grid (All Pairs) -->
+        <section class="glass-card rounded-2xl p-5">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <h2 class="text-lg font-bold text-white">📊 الرادار اللحظي لجميع الأزواج والسلع (اضغط على أي زوج لعرض الشارت)</h2>
+                <div class="flex gap-2 text-xs">
+                    <button onclick="filterMarket('ALL')" class="px-3 py-1 rounded-lg bg-blue-600 text-white">الكل</button>
+                    <button onclick="filterMarket('السلع والمعادن')" class="px-3 py-1 rounded-lg bg-gray-800 hover:bg-gray-700">الذهب والنفط والفضة</button>
+                    <button onclick="filterMarket('الفوريكس الرئيسي')" class="px-3 py-1 rounded-lg bg-gray-800 hover:bg-gray-700">الفوريكس الرئيسي</button>
+                    <button onclick="filterMarket('تقاطعات الفوريكس')" class="px-3 py-1 rounded-lg bg-gray-800 hover:bg-gray-700">التقاطعات</button>
+                </div>
+            </div>
+
+            <div id="market-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                <!-- Cards injected by JS -->
+            </div>
+        </section>
+
+        <!-- Bottom Grid: Recorded Signals History + Live Economic News -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Recorded Signals Table -->
+            <div class="lg:col-span-2 glass-card rounded-2xl p-5">
+                <h2 class="text-lg font-bold text-white mb-4">📜 سجل التوصيات المحفوظة تلقائياً (حتى أثناء إغلاق هاتفك)</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right text-xs">
+                        <thead class="bg-gray-800/80 text-gray-400">
+                            <tr>
+                                <th class="p-3 rounded-r-lg">الوقت (UTC)</th>
+                                <th class="p-3">الأصل</th>
+                                <th class="p-3">التوصية</th>
+                                <th class="p-3">الدخول</th>
+                                <th class="p-3">SL</th>
+                                <th class="p-3">TP1 / TP2</th>
+                                <th class="p-3">الثقة</th>
+                                <th class="p-3 rounded-l-lg">الحالة</th>
+                            </tr>
+                        </thead>
+                        <tbody id="signals-table-body" class="divide-y divide-gray-800">
+                            <tr><td colspan="8" class="p-4 text-center text-gray-500">جاري تحميل التوصيات المسجلة...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Economic News Feed -->
+            <div class="glass-card rounded-2xl p-5">
+                <h2 class="text-lg font-bold text-white mb-4">📰 أحدث الأخبار الاقتصادية المؤثرة</h2>
+                <div id="news-list" class="space-y-3 text-xs">
+                    <div class="text-gray-500">جاري جلب الأخبار اللحظية...</div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- TradingView Widget Script -->
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <script>
+        let marketData = [];
+        let currentFilter = 'ALL';
+        let selectedTvSymbol = 'OANDA:XAUUSD';
+
+        function loadTradingViewChart(tvSymbol) {
+            selectedTvSymbol = tvSymbol;
+            document.getElementById('tv_chart_container').innerHTML = '';
+            new TradingView.widget({
+                "autosize": true,
+                "symbol": tvSymbol,
+                "interval": "5",
+                "timezone": "Etc/UTC",
+                "theme": "dark",
+                "style": "1",
+                "locale": "ar_AE",
+                "enable_publishing": false,
+                "hide_top_toolbar": false,
+                "hide_legend": false,
+                "save_image": false,
+                "container_id": "tv_chart_container",
+                "studies": [
+                    "MASimple@tv-basicstudies",
+                    "RSI@tv-basicstudies"
+                ]
+            });
+        }
+
+        function selectAsset(symbol) {
+            const item = marketData.find(x => x.symbol === symbol || x.tv_symbol === symbol);
+            if (!item) return;
+
+            document.getElementById('chart-title').innerText = item.name;
+            document.getElementById('asset-selector').value = item.tv_symbol;
+            document.getElementById('detail-price').innerText = item.price;
+            document.getElementById('detail-rsi').innerText = item.rsi;
+            document.getElementById('detail-sl').innerText = item.sl;
+            document.getElementById('detail-tp1').innerText = item.tp1;
+            document.getElementById('detail-tp2').innerText = item.tp2;
+            document.getElementById('detail-ai-summary').innerText = item.ai_summary;
+
+            const badge = document.getElementById('detail-badge');
+            if (item.action === 'BUY') {
+                badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40";
+                badge.innerText = `شراء BUY (${item.confidence}%)`;
+            } else if (item.action === 'SELL') {
+                badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-red-500/20 text-red-400 border border-red-500/40";
+                badge.innerText = `بيع SELL (${item.confidence}%)`;
+            } else {
+                badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-gray-800 text-gray-300";
+                badge.innerText = "مراقبة / انتظار";
+            }
+
+            const reasonsEl = document.getElementById('detail-reasons');
+            reasonsEl.innerHTML = item.reasons.map(r => `<li>${r}</li>`).join('');
+
+            if (selectedTvSymbol !== item.tv_symbol) {
+                loadTradingViewChart(item.tv_symbol);
+            }
+        }
+
+        function changeAssetFromSelect() {
+            const tvSym = document.getElementById('asset-selector').value;
+            selectAsset(tvSym);
+        }
+
+        function filterMarket(cat) {
+            currentFilter = cat;
+            renderMarketGrid();
+        }
+
+        function renderMarketGrid() {
+            const grid = document.getElementById('market-grid');
+            const filtered = currentFilter === 'ALL' ? marketData : marketData.filter(x => x.category === currentFilter);
+            
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center text-gray-400 py-6">جاري تحليل الأزواج في السيرفر... انتظر 15 ثانية ثم سيتم التحديث تلقائياً.</div>';
+                return;
+            }
+
+            grid.innerHTML = filtered.map(item => {
+                let badgeHtml = `<span class="text-xs px-2 py-0.5 rounded bg-gray-800 text-gray-400">انتظار</span>`;
+                let borderClass = "border-gray-800 hover:border-gray-600";
+                if (item.action === 'BUY') {
+                    badgeHtml = `<span class="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">BUY ${item.confidence}%</span>`;
+                    borderClass = "border-emerald-500/40 bg-emerald-950/10";
+                } else if (item.action === 'SELL') {
+                    badgeHtml = `<span class="text-xs px-2 py-0.5 rounded bg-red-500/20 text-red-400 font-bold">SELL ${item.confidence}%</span>`;
+                    borderClass = "border-red-500/40 bg-red-950/10";
+                }
+
+                return `
+                <div onclick="selectAsset('${item.symbol}')" class="cursor-pointer rounded-xl p-3.5 border ${borderClass} bg-gray-900/60 transition">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-bold text-sm text-white">${item.name}</span>
+                        ${badgeHtml}
+                    </div>
+                    <div class="flex justify-between items-center text-xs text-gray-400 mt-2">
+                        <span>السعر: <strong class="text-gray-200">${item.price}</strong></span>
+                        <span>RSI: ${item.rsi}</span>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        async function fetchDashboardData() {
+            try {
+                const res = await fetch('/api/dashboard');
+                const data = await res.json();
+                
+                document.getElementById('last-scan').innerText = data.last_scan;
+                marketData = data.market_state || [];
+
+                // Populate dropdown once
+                const selector = document.getElementById('asset-selector');
+                if (selector.options.length <= 1 && marketData.length > 0) {
+                    selector.innerHTML = marketData.map(m => `<option value="${m.tv_symbol}">${m.name}</option>`).join('');
+                }
+
+                renderMarketGrid();
+                if (marketData.length > 0) {
+                    selectAsset(selectedTvSymbol);
+                }
+
+                // Render Signals History
+                const tbody = document.getElementById('signals-table-body');
+                if (data.signals_history && data.signals_history.length > 0) {
+                    tbody.innerHTML = data.signals_history.map(s => {
+                        const actionBadge = s.action === 'BUY' 
+                            ? '<span class="text-emerald-400 font-bold">شراء BUY</span>' 
+                            : '<span class="text-red-400 font-bold">بيع SELL</span>';
+                        return `
+                        <tr class="hover:bg-gray-800/40">
+                            <td class="p-3 text-gray-400">${s.timestamp.replace(' UTC', '')}</td>
+                            <td class="p-3 font-bold text-white">${s.display_name}</td>
+                            <td class="p-3">${actionBadge}</td>
+                            <td class="p-3 font-mono">${s.entry_price}</td>
+                            <td class="p-3 font-mono text-red-400">${s.stop_loss}</td>
+                            <td class="p-3 font-mono text-emerald-400">${s.tp1} / ${s.tp2}</td>
+                            <td class="p-3 font-bold text-amber-400">${s.confidence}%</td>
+                            <td class="p-3 font-semibold">${s.status}</td>
+                        </tr>`;
+                    }).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="8" class="p-4 text-center text-gray-500">لا توجد توصيات مؤكدة مسجلة بعد. سيقوم النظام بتسجيلها فور تحقق الشروط الفنية والذكاء الاصطناعي.</td></tr>';
+                }
+
+                // Render News
+                const newsList = document.getElementById('news-list');
+                if (data.news && data.news.length > 0) {
+                    newsList.innerHTML = data.news.map(n => `
+                        <a href="${n.link}" target="_blank" class="block p-3 rounded-xl bg-gray-800/50 hover:bg-gray-800 border border-gray-700/40 transition">
+                            <div class="text-gray-200 font-semibold leading-snug">${n.title}</div>
+                            <div class="text-[10px] text-gray-500 mt-1">${n.published}</div>
+                        </a>
+                    `).join('');
+                }
+            } catch (e) {
+                console.error("Dashboard fetch error:", e);
+            }
+        }
+
+        async function triggerScan() {
+            const btn = document.getElementById('scan-btn');
+            btn.innerText = "⏳ جاري الفحص...";
+            btn.disabled = true;
+            await fetch('/api/scan-now', { method: 'POST' });
+            setTimeout(() => {
+                fetchDashboardData();
+                btn.innerText = "🔄 فحص فوري الآن";
+                btn.disabled = false;
+            }, 6000);
+        }
+
+        // Init
+        loadTradingViewChart('OANDA:XAUUSD');
+        fetchDashboardData();
+        // تحديث الواجهة تلقائياً كل 30 ثانية
+        setInterval(fetchDashboardData, 30000);
+    </script>
+</body>
+</html>
